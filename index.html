@@ -151,9 +151,6 @@
   }
   .code-input:focus{outline:none;border-color:var(--teal)}
 
-  .skip-note{
-    background:var(--bg);border-radius:10px;padding:12px 14px;font-size:14px;color:var(--muted);
-  }
 
   .error-box{
     display:none;background:var(--err-soft);color:var(--err);
@@ -239,7 +236,7 @@
           </div>
         </div>
 
-        <p class="muted">לוקח בערך 5 דקות. אם כמעט לא עבדת עם מישהו מהם, אפשר לסמן את זה ולדלג עליו.</p>
+        <p class="muted">לוקח בערך 5 דקות.</p>
       </div>
       <div class="card" id="codeCard">
         <label class="q-label" for="accessCode">קוד גישה</label>
@@ -309,8 +306,7 @@ const CRITERIA = [
 
 const FAMILIARITY = [
   { v: 'high', t: 'הרבה' },
-  { v: 'mid',  t: 'מדי פעם' },
-  { v: 'low',  t: 'כמעט לא' }
+  { v: 'mid',  t: 'מדי פעם' }
 ];
 
 /* ===== בדיקת מילוי קודם ===== */
@@ -365,10 +361,9 @@ function empStep(emp, i){
         <span class="q-label">כמה יצא לך לעבוד איתו במשמרות?</span>
         ${pills(k + '_fam', FAMILIARITY)}
       </div>
-      <div class="skip-note" data-skip="${k}" hidden>אין בעיה, נדלג עליו. אפשר להמשיך לעובד הבא.</div>
     </div>
 
-    <div data-body="${k}" hidden>
+    <div data-body="${k}">
       <div class="card">
         <h3>דירוג</h3>
         <div class="scale-legend"><span>1 חלש</span><span>2 טעון שיפור</span><span>3 סביר</span><span>4 טוב</span><span>5 מצוין</span></div>
@@ -403,13 +398,6 @@ let current = 0;
 
 /* הצגה/הסתרה של הדירוג לפי היכרות */
 form.addEventListener('change', e => {
-  const m = e.target.name && e.target.name.match(/^(e\d+)_fam$/);
-  if (m) {
-    const k = m[1];
-    const low = e.target.value === 'low';
-    form.querySelector(`[data-body="${k}"]`).hidden = low;
-    form.querySelector(`[data-skip="${k}"]`).hidden = !low;
-  }
   const row = e.target.closest('.rate-row, .q');
   if (row) row.classList.remove('invalid');
   const sec = e.target.closest('.step[data-step="emp"]');
@@ -454,11 +442,8 @@ function validateEmp(section){
   const errBox = section.querySelector(`[data-err="${k}"]`);
   const missing = [];
 
-  if (!val(k + '_fam')) {
-    missing.push(section.querySelector(`[data-q="${k}_fam"]`));
-  } else if (val(k + '_fam') !== 'low') {
-    CRITERIA.forEach(c => { if (!val(`${k}_${c.id}`)) missing.push(section.querySelector(`[data-rate="${k}_${c.id}"]`)); });
-  }
+  if (!val(k + '_fam')) missing.push(section.querySelector(`[data-q="${k}_fam"]`));
+  CRITERIA.forEach(c => { if (!val(`${k}_${c.id}`)) missing.push(section.querySelector(`[data-rate="${k}_${c.id}"]`)); });
 
   missing.forEach(el => el.classList.add('invalid'));
   if (missing.length) {
@@ -527,11 +512,9 @@ function collect(){
     const k = 'e' + i;
     const fam = val(k + '_fam');
     const row = { name, familiarity: fam, ratings: {}, strengths: '', improve: '' };
-    if (fam !== 'low') {
-      CRITERIA.forEach(c => row.ratings[c.id] = Number(val(`${k}_${c.id}`)));
-      row.strengths = document.getElementById(k + '_good').value.trim();
-      row.improve   = document.getElementById(k + '_improve').value.trim();
-    }
+    CRITERIA.forEach(c => row.ratings[c.id] = Number(val(`${k}_${c.id}`)));
+    row.strengths = document.getElementById(k + '_good').value.trim();
+    row.improve   = document.getElementById(k + '_improve').value.trim();
     return row;
   });
   return {
